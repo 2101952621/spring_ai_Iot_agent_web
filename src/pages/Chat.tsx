@@ -13,7 +13,7 @@ export default function Chat() {
   const [sessions, setSessions] = useState<Record<string, ChatSessionVO[]>>({});
   const [currentSessionId, setCurrentSessionId] = useState('');
 
-  const { messages, input, setInput, loading, examples, send, stop, createSession } =
+  const { messages, input, setInput, loading, examples, examplesLoading, send, stop, createSession, refreshExamples } =
     useChat(currentSessionId);
 
   const loadSessions = useCallback(async () => {
@@ -101,7 +101,12 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full px-4 pb-20">
-              <ExampleQuestions examples={examples} onSelect={handleExampleSelect} />
+              <ExampleQuestions
+                examples={examples}
+                onSelect={handleExampleSelect}
+                onRefresh={refreshExamples}
+                refreshing={examplesLoading}
+              />
             </div>
           ) : (
             <div className="w-full max-w-3xl py-4 mx-auto">

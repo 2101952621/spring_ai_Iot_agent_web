@@ -34,7 +34,7 @@ export default function Login() {
             <Bot size={32} />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">万物互联领航员</h1>
-          <p className="mt-1 text-sm text-slate-500">万物互联领航员平台 AI 助手</p>
+          <p className="mt-1 text-sm text-slate-500">物联网平台的专用AI助手</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">

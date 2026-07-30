@@ -1,17 +1,33 @@
-import { Sparkles } from 'lucide-react';
+import { RefreshCw, Sparkles } from 'lucide-react';
 import type { Example } from '@/types';
 
 interface ExampleQuestionsProps {
   examples: Example[];
   onSelect: (question: string) => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-export function ExampleQuestions({ examples, onSelect }: ExampleQuestionsProps) {
+export function ExampleQuestions({ examples, onSelect, onRefresh, refreshing }: ExampleQuestionsProps) {
   return (
     <div className="w-full max-w-2xl p-6 mx-auto border rounded-2xl border-slate-100 bg-white/70 shadow-card backdrop-blur">
-      <div className="flex items-center gap-2 mb-4 text-lg font-semibold text-slate-800">
-        <Sparkles className="text-primary" size={20} />
-        我是你的AI助理
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 text-lg font-semibold text-slate-800">
+          <Sparkles className="text-primary" size={20} />
+          我是你的AI助理
+        </div>
+        {onRefresh && (
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
+            title="换一批"
+            className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-primary disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+            刷新
+          </button>
+        )}
       </div>
       <p className="mb-5 text-sm text-slate-500">打开功能，查产品，我来做！</p>
 

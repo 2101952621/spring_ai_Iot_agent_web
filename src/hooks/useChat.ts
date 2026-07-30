@@ -8,18 +8,30 @@ export function useChat(sessionId: string) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [examples, setExamples] = useState<Example[]>([]);
+  const [examplesPage, setExamplesPage] = useState(0);
+  const [examplesLoading, setExamplesLoading] = useState(false);
   const abortRef = useRef<(() => void) | null>(null);
   const sessionIdRef = useRef(sessionId);
+  const initialLoadedRef = useRef(false);
   sessionIdRef.current = sessionId;
 
-  const loadExamples = useCallback(async () => {
+  const loadExamples = useCallback(async (page: number) => {
+    setExamplesLoading(true);
     try {
-      const list = await chatApi.getHotMessages(3);
+      const list = await chatApi.getHotMessages(page);
       setExamples(list);
+      setExamplesPage(page);
     } catch {
       setExamples([]);
+    } finally {
+      setExamplesLoading(false);
     }
   }, []);
+
+  const refreshExamples = useCallback(async () => {
+    const nextPage = examplesPage + 1;
+    await loadExamples(nextPage);
+  }, [examplesPage, loadExamples]);
 
   const loadHistory = useCallback(async (sid: string) => {
     try {
@@ -37,7 +49,10 @@ export function useChat(sessionId: string) {
   }, []);
 
   useEffect(() => {
-    loadExamples();
+    if (!initialLoadedRef.current) {
+      initialLoadedRef.current = true;
+      loadExamples(0);
+    }
   }, [loadExamples]);
 
   useEffect(() => {
@@ -139,8 +154,10 @@ export function useChat(sessionId: string) {
     setInput,
     loading,
     examples,
+    examplesLoading,
     send,
     stop,
     createSession,
+    refreshExamples,
   };
 }

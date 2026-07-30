@@ -2,9 +2,9 @@ import { http } from './request';
 import type { ChatEventVO, ChatSessionVO, Example, MessageVO, SessionVO } from '@/types';
 
 export const chatApi = {
-  /** 获取热门示例问题 */
-  getHotMessages: (n = 3) =>
-    http.get<Example[]>('/ai/hot', { params: { n } }),
+  /** 获取热门示例问题（分页，每页固定 3 条） */
+  getHotMessages: (page = 0) =>
+    http.get<Example[]>('/ai/hot', { params: { page } }),
 
   /** 创建新会话 */
   createSession: (n = 3) =>
