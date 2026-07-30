@@ -10,6 +10,7 @@ import type { ChatSessionVO } from '@/types';
 
 export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sessions, setSessions] = useState<Record<string, ChatSessionVO[]>>({});
   const [currentSessionId, setCurrentSessionId] = useState('');
 
@@ -49,6 +50,15 @@ export default function Chat() {
     await loadSessions();
   };
 
+  const handleMenuClick = () => {
+    if (window.innerWidth < 768) {
+      setSidebarOpen(true);
+      setSidebarCollapsed(false);
+    } else {
+      setSidebarCollapsed((v) => !v);
+    }
+  };
+
   const handleSend = async () => {
     let sid = currentSessionId;
     if (!sid) {
@@ -85,6 +95,8 @@ export default function Chat() {
       <ChatSidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
         sessions={sessions}
         currentSessionId={currentSessionId}
         onSelect={handleSelectSession}
@@ -95,7 +107,7 @@ export default function Chat() {
       <main className="flex flex-col flex-1">
         <ChatHeader
           title={activeSessionTitle}
-          onMenuClick={() => setSidebarOpen(true)}
+          onMenuClick={handleMenuClick}
         />
 
         <div className="flex-1 overflow-y-auto">
