@@ -14,6 +14,23 @@ export interface LoginForm {
   password: string;
 }
 
+export interface RegisterForm {
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+}
+
+export interface ResetPasswordForm {
+  email: string;
+  newPassword: string;
+  confirmPassword?: string;
+  resetToken: string;
+  verificationCode?: string;
+}
+
 export interface ChatSessionVO {
   sessionId: string;
   title?: string;

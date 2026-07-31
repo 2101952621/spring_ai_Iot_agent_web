@@ -1,5 +1,6 @@
 import { Bot, Eye, EyeOff, Lock, User } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Login() {
@@ -85,6 +86,15 @@ export default function Login() {
             {loading ? '登录中...' : '登 录'}
           </button>
         </form>
+
+        <div className="mt-5 flex items-center justify-between text-sm">
+          <Link to="/register" className="text-primary hover:underline">
+            注册账号
+          </Link>
+          <Link to="/forgot-password" className="text-slate-400 hover:text-primary hover:underline">
+            忘记密码？
+          </Link>
+        </div>
       </div>
     </div>
   );
