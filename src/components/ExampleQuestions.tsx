@@ -6,9 +6,10 @@ interface ExampleQuestionsProps {
   onSelect: (question: string) => void;
   onRefresh?: () => void;
   refreshing?: boolean;
+  disabled?: boolean;
 }
 
-export function ExampleQuestions({ examples, onSelect, onRefresh, refreshing }: ExampleQuestionsProps) {
+export function ExampleQuestions({ examples, onSelect, onRefresh, refreshing, disabled }: ExampleQuestionsProps) {
   return (
     <div className="w-full max-w-2xl p-6 mx-auto border rounded-2xl border-slate-100 bg-white/70 shadow-card backdrop-blur">
       <div className="flex items-center justify-between mb-4">
@@ -36,8 +37,9 @@ export function ExampleQuestions({ examples, onSelect, onRefresh, refreshing }: 
         {examples.map((item, idx) => (
           <button
             key={idx}
+            disabled={disabled}
             onClick={() => onSelect(item.describe)}
-            className="flex items-center justify-between w-full px-4 py-3 text-sm transition-all bg-white border shadow-sm rounded-xl border-slate-100 text-slate-700 hover:border-primary/30 hover:shadow-float"
+            className="flex items-center justify-between w-full px-4 py-3 text-sm transition-all bg-white border shadow-sm rounded-xl border-slate-100 text-slate-700 hover:border-primary/30 hover:shadow-float disabled:opacity-50 disabled:cursor-not-allowed"
           >
             
             <span className="text-left">{item.title}: {item.describe}</span>

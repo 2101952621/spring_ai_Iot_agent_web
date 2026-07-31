@@ -13,6 +13,7 @@ export default function Chat() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sessions, setSessions] = useState<Record<string, ChatSessionVO[]>>({});
   const [currentSessionId, setCurrentSessionId] = useState('');
+  const [exampleSending, setExampleSending] = useState(false);
 
   const { messages, input, setInput, loading, examples, examplesLoading, send, stop, createSession, refreshExamples } =
     useChat(currentSessionId);
@@ -60,28 +61,39 @@ export default function Chat() {
   };
 
   const handleSend = async () => {
+    if (loading) return;
     let sid = currentSessionId;
     if (!sid) {
       const session = await createSession();
       if (!session) return;
       sid = session.sessionId;
+    }
+    await send(input, sid);
+    if (sid !== currentSessionId) {
       setCurrentSessionId(sid);
       await loadSessions();
     }
-    send(input, sid);
   };
 
   const handleExampleSelect = async (question: string) => {
-    let sid = currentSessionId;
-    if (!sid) {
-      const session = await createSession();
-      if (!session) return;
-      sid = session.sessionId;
-      setCurrentSessionId(sid);
-      await loadSessions();
+    if (exampleSending || loading) return;
+    setExampleSending(true);
+    try {
+      let sid = currentSessionId;
+      if (!sid) {
+        const session = await createSession();
+        if (!session) return;
+        sid = session.sessionId;
+      }
+      setInput(question);
+      await send(question, sid);
+      if (sid !== currentSessionId) {
+        setCurrentSessionId(sid);
+        await loadSessions();
+      }
+    } finally {
+      setExampleSending(false);
     }
-    setInput(question);
-    send(question, sid);
   };
 
   const activeSessionTitle = currentSessionId
@@ -118,6 +130,7 @@ export default function Chat() {
                 onSelect={handleExampleSelect}
                 onRefresh={refreshExamples}
                 refreshing={examplesLoading}
+                disabled={exampleSending || loading}
               />
             </div>
           ) : (

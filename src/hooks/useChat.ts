@@ -13,6 +13,7 @@ export function useChat(sessionId: string) {
   const abortRef = useRef<(() => void) | null>(null);
   const sessionIdRef = useRef(sessionId);
   const initialLoadedRef = useRef(false);
+  const messagesSessionRef = useRef(sessionId);
   sessionIdRef.current = sessionId;
 
   const loadExamples = useCallback(async (page: number) => {
@@ -56,11 +57,16 @@ export function useChat(sessionId: string) {
   }, [loadExamples]);
 
   useEffect(() => {
-    if (sessionId) {
-      loadHistory(sessionId);
-    } else {
+    if (!sessionId) {
       setMessages([]);
+      messagesSessionRef.current = '';
+      return;
     }
+    // 如果当前 messages 已经属于目标会话，避免覆盖（例如发送消息途中触发的加载）
+    if (messagesSessionRef.current === sessionId) return;
+    loadHistory(sessionId).then(() => {
+      messagesSessionRef.current = sessionId;
+    });
   }, [sessionId, loadHistory]);
 
   const stop = useCallback(() => {
@@ -72,7 +78,7 @@ export function useChat(sessionId: string) {
   }, []);
 
   const send = useCallback(
-    async (text: string, explicitSessionId?: string) => {
+    async (text: string, explicitSessionId?: string): Promise<void> => {
       const sid = explicitSessionId || sessionIdRef.current;
       if (!text.trim() || !sid || loading) return;
 
@@ -89,53 +95,65 @@ export function useChat(sessionId: string) {
       };
 
       setMessages((prev) => [...prev, userMsg, assistantMsg]);
+      messagesSessionRef.current = sid;
       setInput('');
       setLoading(true);
 
-      const es = chatApi.chatStream(text.trim(), sid);
-      abortRef.current = () => es.close();
+      return new Promise<void>((resolve) => {
+        const es = chatApi.chatStream(text.trim(), sid);
+        abortRef.current = () => {
+          es.close();
+          resolve();
+        };
 
-      es.onmessage = (event) => {
-        try {
-          const data: ChatEventVO = JSON.parse(event.data);
-          if (data.eventType === 1001 && data.eventData) {
+        const finish = () => {
+          setLoading(false);
+          abortRef.current = null;
+          resolve();
+        };
+
+        es.onmessage = (event) => {
+          try {
+            const data: ChatEventVO = JSON.parse(event.data);
+            if (data.eventType === 1001 && data.eventData) {
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (!last || last.role !== 'assistant') return prev;
+                return [
+                  ...prev.slice(0, -1),
+                  { ...last, content: last.content + data.eventData, loading: false },
+                ];
+              });
+            } else if (data.eventType === 1002) {
+              es.close();
+              finish();
+            }
+          } catch {
+            // 非 JSON 事件文本直接追加
             setMessages((prev) => {
               const last = prev[prev.length - 1];
               if (!last || last.role !== 'assistant') return prev;
               return [
                 ...prev.slice(0, -1),
-                { ...last, content: last.content + data.eventData, loading: false },
+                { ...last, content: last.content + event.data, loading: false },
               ];
             });
-          } else if (data.eventType === 1002) {
-            setLoading(false);
-            es.close();
           }
-        } catch {
-          // 非 JSON 事件文本直接追加
+        };
+
+        es.onerror = (err) => {
+          const detail = err.message || '连接异常，请稍后重试。';
           setMessages((prev) => {
             const last = prev[prev.length - 1];
             if (!last || last.role !== 'assistant') return prev;
             return [
               ...prev.slice(0, -1),
-              { ...last, content: last.content + event.data, loading: false },
+              { ...last, content: last.content || detail, loading: false },
             ];
           });
-        }
-      };
-
-      es.onerror = (err) => {
-        const detail = err.message || '连接异常，请稍后重试。';
-        setMessages((prev) => {
-          const last = prev[prev.length - 1];
-          if (!last || last.role !== 'assistant') return prev;
-          return [
-            ...prev.slice(0, -1),
-            { ...last, content: last.content || detail, loading: false },
-          ];
-        });
-        setLoading(false);
-      };
+          finish();
+        };
+      });
     },
     [sessionId, loading],
   );
