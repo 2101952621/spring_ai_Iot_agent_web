@@ -43,14 +43,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
           'max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm',
           isUser
             ? 'bg-primary text-white'
-            : 'border border-slate-100 bg-white text-slate-700',
+            : 'border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200',
         )}
       >
         {message.loading && message.content === '' ? (
-          <div className="flex items-center gap-1.5 text-slate-400">
-            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" />
-            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:0.15s]" />
-            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:0.3s]" />
+          <div className="w-full py-1">
+            <div className="mb-2 text-sm text-slate-500 dark:text-slate-400">正在思考</div>
+            <div className="thinking-wave-bar" />
           </div>
         ) : isUser ? (
           <div className="whitespace-pre-wrap">{message.content}</div>
@@ -69,7 +68,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       </div>
 
       {isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400">
           <User size={16} />
         </div>
       )}

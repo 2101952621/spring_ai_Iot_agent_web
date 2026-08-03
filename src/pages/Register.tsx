@@ -60,28 +60,28 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-gradient-to-br from-brand-start via-white to-brand-end">
-      <div className="w-full max-w-md p-8 border rounded-3xl border-white/50 bg-white/80 shadow-float backdrop-blur">
+    <div className="flex items-center justify-center min-h-screen px-4 bg-gradient-to-br from-brand-start via-white to-brand-end dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="w-full max-w-md p-8 border rounded-3xl border-white/50 dark:border-slate-600/50 bg-white/80 dark:bg-slate-800/80 shadow-float backdrop-blur">
         {step === 'form' ? (
           <>
             <div className="mb-8 text-center">
               <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-white rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-card">
                 <Bot size={32} />
               </div>
-              <h1 className="text-2xl font-bold text-slate-800">创建账号</h1>
-              <p className="mt-1 text-sm text-slate-500">注册一个万物互联领航员账号</p>
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">创建账号</h1>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">注册一个万物互联领航员账号</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">邮箱 *</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">邮箱 *</label>
                 <div className="relative">
-                  <Mail className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400" size={18} />
+                  <Mail className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400 dark:text-slate-500" size={18} />
                   <input
                     type="email"
                     value={form.email}
                     onChange={(e) => handleChange('email', e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm outline-none transition-colors text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary/20"
                     placeholder="请输入邮箱"
                   />
                 </div>
@@ -89,27 +89,27 @@ export default function Register() {
 
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">姓</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">姓</label>
                   <div className="relative">
-                    <User className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400" size={18} />
+                    <User className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400 dark:text-slate-500" size={18} />
                     <input
                       type="text"
                       value={form.lastName || ''}
                       onChange={(e) => handleChange('lastName', e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm outline-none transition-colors text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary/20"
                       placeholder="姓氏"
                     />
                   </div>
                 </div>
                 <div className="flex-1">
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">名</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">名</label>
                   <div className="relative">
-                    <User className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400" size={18} />
+                    <User className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400 dark:text-slate-500" size={18} />
                     <input
                       type="text"
                       value={form.firstName || ''}
                       onChange={(e) => handleChange('firstName', e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm outline-none transition-colors text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary/20"
                       placeholder="名字"
                     />
                   </div>
@@ -117,20 +117,20 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">密码 *</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">密码 *</label>
                 <div className="relative">
-                  <Lock className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400" size={18} />
+                  <Lock className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400 dark:text-slate-500" size={18} />
                   <input
                     type={showPwd ? 'text' : 'password'}
                     value={form.password}
                     onChange={(e) => handleChange('password', e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-10 text-sm outline-none transition-colors text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary/20"
                     placeholder="至少 6 位密码"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPwd(!showPwd)}
-                    className="absolute -translate-y-1/2 right-3 top-1/2 text-slate-400"
+                    className="absolute -translate-y-1/2 right-3 top-1/2 text-slate-400 dark:text-slate-500"
                   >
                     {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -138,21 +138,21 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">确认密码 *</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">确认密码 *</label>
                 <div className="relative">
-                  <Lock className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400" size={18} />
+                  <Lock className="absolute -translate-y-1/2 left-3 top-1/2 text-slate-400 dark:text-slate-500" size={18} />
                   <input
                     type={showPwd ? 'text' : 'password'}
                     value={form.confirmPassword || ''}
                     onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm outline-none transition-colors text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary focus:ring-2 focus:ring-primary/20"
                     placeholder="再次输入密码"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="px-3 py-2 text-xs text-red-500 rounded-lg bg-red-50">{error}</div>
+                <div className="px-3 py-2 text-xs text-red-500 dark:text-red-400 rounded-lg bg-red-50 dark:bg-red-900/20">{error}</div>
               )}
 
               <button
@@ -164,7 +164,7 @@ export default function Register() {
               </button>
             </form>
 
-            <p className="mt-5 text-center text-sm text-slate-500">
+            <p className="mt-5 text-center text-sm text-slate-500 dark:text-slate-400">
               已有账号？
               <Link to="/login" className="ml-1 font-medium text-primary hover:underline">
                 立即登录
@@ -177,30 +177,30 @@ export default function Register() {
               <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-white rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-card">
                 <Mail size={32} />
               </div>
-              <h1 className="text-2xl font-bold text-slate-800">激活邮件已发送</h1>
-              <p className="mt-2 text-sm text-slate-500">
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">激活邮件已发送</h1>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 我们已将激活邮件发送至
-                <span className="font-medium text-slate-700">{form.email}</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">{form.email}</span>
                 ，请前往邮箱查收并激活账号。
               </p>
             </div>
 
             {error && (
-              <div className="px-3 py-2 mb-3 text-xs text-red-500 rounded-lg bg-red-50">{error}</div>
+              <div className="px-3 py-2 mb-3 text-xs text-red-500 dark:text-red-400 rounded-lg bg-red-50 dark:bg-red-900/20">{error}</div>
             )}
             {success && (
-              <div className="px-3 py-2 mb-3 text-xs text-green-600 rounded-lg bg-green-50">{success}</div>
+              <div className="px-3 py-2 mb-3 text-xs text-green-600 dark:text-green-400 rounded-lg bg-green-50 dark:bg-green-900/20">{success}</div>
             )}
 
             <button
               onClick={handleResendMail}
               disabled={loading}
-              className="w-full rounded-xl border border-dashed border-primary/40 bg-primary-50 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
+              className="w-full rounded-xl border border-dashed border-primary/40 bg-primary-50 dark:bg-primary/10 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-primary/20 disabled:opacity-50"
             >
               {loading ? '发送中...' : '重新发送激活邮件'}
             </button>
 
-            <p className="mt-5 text-center text-sm text-slate-500">
+            <p className="mt-5 text-center text-sm text-slate-500 dark:text-slate-400">
               <Link to="/login" className="font-medium text-primary hover:underline">
                 返回登录
               </Link>

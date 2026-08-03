@@ -39,7 +39,7 @@ export function ChatSidebar({
       {/* 侧边栏 */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 flex h-full flex-col border-r border-slate-100 bg-white shadow-float transition-all duration-300 md:static md:translate-x-0',
+          'fixed left-0 top-0 z-50 flex h-full flex-col border-r border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-float transition-all duration-300 md:static md:translate-x-0',
           collapsed ? 'w-14 items-center' : 'w-72',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
@@ -51,7 +51,7 @@ export function ChatSidebar({
           )}
         >
           {!collapsed && (
-            <div className="flex items-center gap-2 font-semibold text-slate-800">
+            <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
                 <MessageSquare size={18} />
               </div>
@@ -62,7 +62,7 @@ export function ChatSidebar({
           {/* 移动端关闭按钮 */}
           <button
             onClick={onClose}
-            className={cn('rounded p-1 text-slate-400 hover:bg-slate-100 md:hidden', collapsed && 'mb-2')}
+            className={cn('rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden', collapsed && 'mb-2')}
           >
             <X size={18} />
           </button>
@@ -72,7 +72,7 @@ export function ChatSidebar({
             onClick={onToggleCollapse}
             title={collapsed ? '展开' : '折叠'}
             className={cn(
-              'hidden rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-primary md:block',
+              'hidden rounded p-1 text-slate-400 dark:text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary',
               collapsed && 'mt-2',
             )}
           >
@@ -85,7 +85,7 @@ export function ChatSidebar({
             <div className="px-3 pb-2">
               <button
                 onClick={onNew}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary-50 py-2 text-sm font-medium text-primary hover:bg-primary/10"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary-50 dark:bg-primary/10 py-2 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-primary/20"
               >
                 <Plus size={16} />
                 新建会话
@@ -96,7 +96,7 @@ export function ChatSidebar({
               {Object.entries(sessions).map(([group, list]) =>
                 list.length > 0 ? (
                   <div key={group} className="mb-4">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-slate-500">
                       <History size={12} />
                       {group}
                     </div>
@@ -107,8 +107,8 @@ export function ChatSidebar({
                           className={cn(
                             'group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
                             currentSessionId === session.sessionId
-                              ? 'bg-primary-50 text-primary'
-                              : 'text-slate-600 hover:bg-slate-50',
+                              ? 'bg-primary-50 dark:bg-primary/20 text-primary'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800',
                           )}
                           onClick={() => {
                             onSelect(session.sessionId);
@@ -139,7 +139,7 @@ export function ChatSidebar({
                 ) : null,
               )}
               {Object.values(sessions).every((l) => l.length === 0) && (
-                <div className="py-10 text-center text-sm text-slate-400">暂无历史会话</div>
+                <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">暂无历史会话</div>
               )}
             </div>
           </>
@@ -150,7 +150,7 @@ export function ChatSidebar({
             <button
               onClick={onNew}
               title="新建会话"
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-primary/40 bg-primary-50 text-primary hover:bg-primary/10"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-dashed border-primary/40 bg-primary-50 dark:bg-primary/10 text-primary hover:bg-primary/10 dark:hover:bg-primary/20"
             >
               <Plus size={16} />
             </button>

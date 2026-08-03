@@ -14,8 +14,21 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
+}
+
+/* 全局主题切换平滑过渡 —— 仅过渡颜色相关属性，不影响 transform 动画 */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, box-shadow, fill, stroke;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
 }
 
 html,
@@ -27,6 +40,10 @@ body,
 
 body {
   background: #f8fafc;
+}
+
+.dark body {
+  background: #0f172a;
 }
 
 /* Markdown 内容基础样式 */
@@ -132,4 +149,43 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* 正在思考波浪动画 */
+.thinking-wave-bar {
+  position: relative;
+  height: 4px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #f1f5f9;
+}
+
+.thinking-wave-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    #e0e7ff 0%, #c4b5fd 15%, #a78bfa 30%,
+    #818cf8 50%, #60a5fa 70%, #38bdf8 85%, #e0e7ff 100%
+  );
+  background-size: 50% 100%;
+  animation: thinking-wave 2s linear infinite;
+  border-radius: 2px;
+}
+
+@keyframes thinking-wave {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+.dark .thinking-wave-bar {
+  background: #334155;
 }

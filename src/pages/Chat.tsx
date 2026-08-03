@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChatHeader } from '@/components/ChatHeader';
 import { ChatInput } from '@/components/ChatInput';
 import { ChatMessage } from '@/components/ChatMessage';
@@ -15,8 +15,17 @@ export default function Chat() {
   const [currentSessionId, setCurrentSessionId] = useState('');
   const [exampleSending, setExampleSending] = useState(false);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const { messages, input, setInput, loading, examples, examplesLoading, send, stop, createSession, refreshExamples } =
     useChat(currentSessionId);
+
+  // 消息变化时自动滚动到底部
+  useLayoutEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const loadSessions = useCallback(async () => {
     try {
@@ -103,7 +112,7 @@ export default function Chat() {
     : '万物互联领航员';
 
   return (
-    <div className="flex w-screen h-screen overflow-hidden bg-gradient-to-br from-brand-start via-white to-brand-end">
+    <div className="flex w-screen h-screen overflow-hidden bg-gradient-to-br from-brand-start via-white to-brand-end dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <ChatSidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -122,7 +131,7 @@ export default function Chat() {
           onMenuClick={handleMenuClick}
         />
 
-        <div className="flex-1 overflow-y-auto">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full px-4 pb-20">
               <ExampleQuestions
