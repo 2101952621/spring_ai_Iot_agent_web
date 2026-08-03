@@ -3,6 +3,15 @@
 基于 **React 18 + TypeScript + Vite 5** 构建的物联网智能体前端应用。采用 Tailwind CSS 实现现代响应式界面，支持与后端 Spring AI 智能体服务进行实时通信（SSE）。
 
 ---
+<img width="1868" height="915" alt="user_login" src="https://github.com/user-attachments/assets/cc6e995f-2bf0-4e0a-a1a8-36a4cc403c64" />
+<img width="1865" height="906" alt="reg" src="https://github.com/user-attachments/assets/093277fd-441e-4ba7-8ba5-e62cd09e384c" />
+<img width="1849" height="877" alt="reset" src="https://github.com/user-attachments/assets/585b5924-e152-435b-9a03-4bbb13a9c5de" />
+<img width="1872" height="897" alt="login_in" src="https://github.com/user-attachments/assets/695d65c3-fb9c-4cd5-9bca-f45f25c1a98d" />
+
+## Web UI 预览
+
+配套后端代码仓库：[spring_ai_Iot_agent](https://github.com/2101952621/spring_ai_Iot_agent/)
+
 
 ## 运行环境要求
 
