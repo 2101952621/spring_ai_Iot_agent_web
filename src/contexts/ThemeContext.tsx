@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -33,6 +33,11 @@ function syncTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  // 首次挂载时同步 DOM 和 localStorage，避免初始状态与 DOM 不同步
+  useEffect(() => {
+    syncTheme(getInitialTheme());
+  }, []);
 
   const toggleTheme = () => {
     setTheme((prev) => {
