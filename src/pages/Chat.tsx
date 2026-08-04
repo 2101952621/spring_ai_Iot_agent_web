@@ -52,6 +52,14 @@ export default function Chat() {
     setCurrentSessionId(sessionId);
   };
 
+  const handleSearchSelect = async (sessionId: string) => {
+    setCurrentSessionId(sessionId);
+    setSidebarOpen(false);
+    // 刷新历史会话列表，确保左侧能高亮定位到对应会话
+    await loadSessions();
+  };
+
+
   const handleDeleteSession = async (sessionId: string) => {
     await chatApi.deleteHistorySession(sessionId);
     if (sessionId === currentSessionId) {
@@ -123,6 +131,7 @@ export default function Chat() {
         onSelect={handleSelectSession}
         onNew={handleNewSession}
         onDelete={handleDeleteSession}
+        onSearchSelect={handleSearchSelect}
       />
 
       <main className="flex flex-col flex-1">
@@ -130,6 +139,8 @@ export default function Chat() {
           title={activeSessionTitle}
           onMenuClick={handleMenuClick}
         />
+
+
 
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (

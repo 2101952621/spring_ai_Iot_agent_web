@@ -1,6 +1,8 @@
-import { ChevronLeft, ChevronRight, History, MessageSquare, Plus, Trash2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, History, MessageSquare, Plus, Search, Trash2, X } from 'lucide-react';
 import { cn, formatTime } from '@/utils';
 import type { ChatSessionVO } from '@/types';
+import { ChatSearchModal } from './ChatSearchModal';
 
 interface ChatSidebarProps {
   open: boolean;
@@ -12,6 +14,7 @@ interface ChatSidebarProps {
   onSelect: (sessionId: string) => void;
   onNew: () => void;
   onDelete: (sessionId: string) => void;
+  onSearchSelect?: (sessionId: string) => void;
 }
 
 export function ChatSidebar({
@@ -24,7 +27,33 @@ export function ChatSidebar({
   onSelect,
   onNew,
   onDelete,
+  onSearchSelect,
 }: ChatSidebarProps) {
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // 当前会话变化时，自动滚动到对应历史记录
+  useEffect(() => {
+    if (!currentSessionId || collapsed) return;
+    const el = itemRefs.current[currentSessionId];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [currentSessionId, collapsed, sessions]);
+
+  // Ctrl/Cmd+K 唤起搜索
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+
   return (
     <>
       {/* 遮罩 */}
@@ -59,25 +88,38 @@ export function ChatSidebar({
             </div>
           )}
 
-          {/* 移动端关闭按钮 */}
-          <button
-            onClick={onClose}
-            className={cn('rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden', collapsed && 'mb-2')}
-          >
-            <X size={18} />
-          </button>
-
-          {/* 桌面端折叠/展开按钮 */}
-          <button
-            onClick={onToggleCollapse}
-            title={collapsed ? '展开' : '折叠'}
-            className={cn(
-              'hidden rounded p-1 text-slate-400 dark:text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary',
-              collapsed && 'mt-2',
+          <div className="flex items-center gap-1">
+            {/* 搜索按钮 */}
+            {!collapsed && (
+              <button
+                onClick={() => setSearchOpen(true)}
+                title="搜索历史消息"
+                className="rounded p-1 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary transition-colors"
+              >
+                <Search size={16} />
+              </button>
             )}
-          >
-            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          </button>
+
+            {/* 移动端关闭按钮 */}
+            <button
+              onClick={onClose}
+              className={cn('rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden', collapsed && 'mb-2')}
+            >
+              <X size={18} />
+            </button>
+
+            {/* 桌面端折叠/展开按钮 */}
+            <button
+              onClick={onToggleCollapse}
+              title={collapsed ? '展开' : '折叠'}
+              className={cn(
+                'hidden rounded p-1 text-slate-400 dark:text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary',
+                collapsed && 'mt-2',
+              )}
+            >
+              {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
+          </div>
         </div>
 
         {!collapsed && (
@@ -104,6 +146,9 @@ export function ChatSidebar({
                       {list.map((session) => (
                         <div
                           key={session.sessionId}
+                          ref={(el) => {
+                            itemRefs.current[session.sessionId] = el;
+                          }}
                           className={cn(
                             'group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
                             currentSessionId === session.sessionId
@@ -115,6 +160,7 @@ export function ChatSidebar({
                             onClose();
                           }}
                         >
+
                           <div className="min-w-0 flex-1">
                             <div className="truncate font-medium">
                               {session.title || '新会话'}
@@ -157,6 +203,16 @@ export function ChatSidebar({
           </div>
         )}
       </aside>
+
+      {/* 搜索弹窗 */}
+      <ChatSearchModal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onSelect={(sessionId) => {
+          setSearchOpen(false);
+          onSearchSelect?.(sessionId);
+        }}
+      />
     </>
   );
 }

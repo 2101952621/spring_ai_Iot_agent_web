@@ -1,5 +1,13 @@
 import { http } from './request';
-import type { ChatEventVO, ChatSessionVO, Example, MessageVO, SessionVO } from '@/types';
+import type { ChatEventVO, ChatSessionVO, Example, MessageVO, SessionVO, WebFunctionInfo, VersionItem } from '@/types';
+import type {
+  ChatEventVO,
+  ChatMessageSearchResult,
+  ChatSessionVO,
+  Example,
+  MessageVO,
+  SessionVO,
+} from '@/types';
 
 export const chatApi = {
   /** 获取热门示例问题（分页，每页固定 3 条） */
@@ -25,6 +33,17 @@ export const chatApi = {
   /** 查询单个会话详情 */
   queryBySessionId: (sessionId: string) =>
     http.get<MessageVO[]>(`/ai/${encodeURIComponent(sessionId)}`),
+
+  /** ES 全文检索历史消息 */
+  searchMessages: (keyword: string, page = 1, size = 20) =>
+    http.get<ChatMessageSearchResult>('/ai/search/messages', { params: { keyword, page, size } }),
+
+
+  /** 获取可打开的功能列表 */
+  getFunctions: () => http.get<WebFunctionInfo[]>('/ai/functions'),
+
+  /** 获取版本说明列表 */
+  getVersions: () => http.get<VersionItem[]>('/ai/versions'),
 
   /** 发起 SSE 聊天流 */
   chatStream: (question: string, sessionId: string) => {

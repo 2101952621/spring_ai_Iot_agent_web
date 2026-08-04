@@ -52,6 +52,28 @@ export interface MessageVO {
   type: 'USER' | 'ASSISTANT';
 }
 
+export interface VersionItem {
+  releaseDate: string;
+  title: string;
+  content?: string;
+  detailUrl?: string;
+}
+
+export interface WebFunctionInfo {
+  id: number;
+  functionCode: string;
+  functionName: string;
+  module?: string;
+  openUrl?: string | null;
+  functionPath?: string | null;
+  buttonText?: string;
+  icon?: string;
+  description?: string;
+  cardType?: string;
+  precautions?: string;
+  configMethod?: string | null;
+}
+
 export interface ChatEventVO {
   eventType: number;
   eventData: string | null;
@@ -62,4 +84,25 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   loading?: boolean;
+  functionCard?: WebFunctionInfo;
 }
+
+export interface ChatMessageSearchVO {
+  messageId: string;
+  sessionId: string;
+  sessionTitle: string;
+  messageType: string;
+  messageContent: string;
+  highlight: string;
+  createTime: string;
+  score: number;
+}
+
+export interface ChatMessageSearchResult {
+  keyword: string;
+  page: number;
+  size: number;
+  total: number;
+  items: ChatMessageSearchVO[];
+}
+
