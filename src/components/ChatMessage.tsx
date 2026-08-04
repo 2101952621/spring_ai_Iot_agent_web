@@ -2,6 +2,7 @@ import { Bot, User } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/utils';
+import { FunctionCard } from './FunctionCard';
 import type { ChatMessage as ChatMessageType } from '@/types';
 
 interface ChatMessageProps {
@@ -63,6 +64,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             >
               {message.content}
             </Markdown>
+            {message.functionCard && <FunctionCard data={message.functionCard} />}
           </div>
         )}
       </div>

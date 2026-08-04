@@ -4,9 +4,10 @@ import { ChatInput } from '@/components/ChatInput';
 import { ChatMessage } from '@/components/ChatMessage';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import { ExampleQuestions } from '@/components/ExampleQuestions';
+import { FunctionPanel } from '@/components/FunctionPanel';
 import { useChat } from '@/hooks/useChat';
 import { chatApi } from '@/api/chat';
-import type { ChatSessionVO } from '@/types';
+import type { ChatSessionVO, WebFunctionInfo } from '@/types';
 
 export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,6 +15,7 @@ export default function Chat() {
   const [sessions, setSessions] = useState<Record<string, ChatSessionVO[]>>({});
   const [currentSessionId, setCurrentSessionId] = useState('');
   const [exampleSending, setExampleSending] = useState(false);
+  const [functionPanelOpen, setFunctionPanelOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -77,19 +79,23 @@ export default function Chat() {
     }
   };
 
-  const handleSend = async () => {
-    if (loading) return;
+  const handleSendWithText = async (text: string) => {
+    if (loading || !text.trim()) return;
     let sid = currentSessionId;
     if (!sid) {
       const session = await createSession();
       if (!session) return;
       sid = session.sessionId;
     }
-    await send(input, sid);
+    await send(text.trim(), sid);
     if (sid !== currentSessionId) {
       setCurrentSessionId(sid);
       await loadSessions();
     }
+  };
+
+  const handleSend = async () => {
+    await handleSendWithText(input);
   };
 
   const handleExampleSelect = async (question: string) => {
@@ -169,6 +175,16 @@ export default function Chat() {
             onSend={handleSend}
             onStop={stop}
             loading={loading}
+            onOpenFunctions={() => setFunctionPanelOpen(true)}
+          />
+          <FunctionPanel
+            open={functionPanelOpen}
+            onClose={() => setFunctionPanelOpen(false)}
+            onSelect={(f: WebFunctionInfo) => {
+              const prompt = `帮我打开${f.functionName}`;
+              setInput(prompt);
+              handleSendWithText(prompt);
+            }}
           />
         </div>
       </main>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { chatApi } from '@/api/chat';
 import { generateId } from '@/utils';
-import type { ChatEventVO, ChatMessage, Example, SessionVO } from '@/types';
+import type { ChatEventVO, ChatMessage, Example, SessionVO, WebFunctionInfo } from '@/types';
 
 export function useChat(sessionId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -124,6 +124,21 @@ export function useChat(sessionId: string) {
                   { ...last, content: last.content + data.eventData, loading: false },
                 ];
               });
+            } else if (data.eventType === 1004 && data.eventData) {
+              try {
+                const card: WebFunctionInfo =
+                  typeof data.eventData === 'string' ? JSON.parse(data.eventData) : (data.eventData as WebFunctionInfo);
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  if (!last || last.role !== 'assistant') return prev;
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, functionCard: card, loading: false },
+                  ];
+                });
+              } catch {
+                // 卡片数据解析失败，静默忽略
+              }
             } else if (data.eventType === 1002) {
               es.close();
               finish();

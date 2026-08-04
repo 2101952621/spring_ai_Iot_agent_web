@@ -14,7 +14,7 @@ export function ChatHeader({ title, onMenuClick }: ChatHeaderProps) {
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <header className="flex items-center justify-between px-4 border-b h-14 shrink-0 border-slate-100 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+    <header className="relative z-50 flex items-center justify-between px-4 border-b h-14 shrink-0 border-slate-100 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}

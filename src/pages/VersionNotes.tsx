@@ -1,29 +1,154 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { ArrowLeft, Calendar, Sparkles, Bug, Zap, Layers } from 'lucide-react';
 import { cn } from '@/utils';
+import { chatApi } from '@/api/chat';
+import type { VersionItem } from '@/types';
 
-interface VersionItem {
-  date: string;
-  title: string;
-  features?: string[];
-  optimizations?: string[];
+function TimelineDot({ active }: { active: boolean }) {
+  return (
+    <div
+      className={cn(
+        'absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 transition-colors',
+        active
+          ? 'bg-primary ring-primary/20'
+          : 'bg-slate-300 dark:bg-slate-600 ring-white dark:ring-slate-800',
+      )}
+    />
+  );
 }
 
-const mockVersions: VersionItem[] = [
-];
+interface ContentBlock {
+  type: string;
+  items: string[];
+}
 
-function TimelineDot() {
+function parseContent(content?: string): ContentBlock[] | null {
+  if (!content) return null;
+  try {
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed)) return parsed as ContentBlock[];
+  } catch {
+    // not json
+  }
+  return null;
+}
+
+const typeMeta: Record<string, { icon: React.ReactNode; color: string; bg: string; border: string; label: string }> = {
+  '新增功能': {
+    icon: <Sparkles size={14} />,
+    color: 'text-emerald-700 dark:text-emerald-300',
+    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    border: 'border-emerald-200 dark:border-emerald-800',
+    label: '新增功能',
+  },
+  'bugfix': {
+    icon: <Bug size={14} />,
+    color: 'text-rose-700 dark:text-rose-300',
+    bg: 'bg-rose-50 dark:bg-rose-900/20',
+    border: 'border-rose-200 dark:border-rose-800',
+    label: '问题修复',
+  },
+  '修复': {
+    icon: <Bug size={14} />,
+    color: 'text-rose-700 dark:text-rose-300',
+    bg: 'bg-rose-50 dark:bg-rose-900/20',
+    border: 'border-rose-200 dark:border-rose-800',
+    label: '问题修复',
+  },
+  '优化': {
+    icon: <Zap size={14} />,
+    color: 'text-amber-700 dark:text-amber-300',
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    border: 'border-amber-200 dark:border-amber-800',
+    label: '优化',
+  },
+  '基础功能': {
+    icon: <Layers size={14} />,
+    color: 'text-sky-700 dark:text-sky-300',
+    bg: 'bg-sky-50 dark:bg-sky-900/20',
+    border: 'border-sky-200 dark:border-sky-800',
+    label: '基础功能',
+  },
+};
+
+function getMeta(type: string) {
+  return typeMeta[type] || {
+    icon: <Layers size={14} />,
+    color: 'text-slate-700 dark:text-slate-300',
+    bg: 'bg-slate-50 dark:bg-slate-800/40',
+    border: 'border-slate-200 dark:border-slate-700',
+    label: type,
+  };
+}
+
+function ContentRenderer({ content }: { content?: string }) {
+  const blocks = parseContent(content);
+  if (!blocks) {
+    return (
+      <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+        {content}
+      </div>
+    );
+  }
+
   return (
-    <div className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600 ring-4 ring-white dark:ring-slate-800" />
+    <div className="space-y-3">
+      {blocks.map((block, idx) => {
+        const meta = getMeta(block.type);
+        return (
+          <div
+            key={idx}
+            className={cn(
+              'rounded-lg border p-3',
+              meta.bg,
+              meta.border,
+            )}
+          >
+            <div className={cn('flex items-center gap-1.5 text-xs font-semibold mb-2', meta.color)}>
+              {meta.icon}
+              {meta.label}
+            </div>
+            <ul className="space-y-1.5">
+              {block.items.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span className={cn('mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full', meta.color.replace('text-', 'bg-'))} />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
 export default function VersionNotes() {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState(mockVersions[0]?.date || '');
+  const [versions, setVersions] = useState<VersionItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState('');
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const selectedItem = mockVersions.find((v) => v.date === selectedDate);
+  useEffect(() => {
+    chatApi
+      .getVersions()
+      .then((list) => {
+        setVersions(list);
+        if (list.length > 0) setSelectedDate(list[0].releaseDate);
+      })
+      .catch(() => setVersions([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleDateClick = (date: string) => {
+    setSelectedDate(date);
+    const el = itemRefs.current[date];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div className="flex h-screen flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
@@ -43,55 +168,37 @@ export default function VersionNotes() {
       <div className="flex flex-1 overflow-hidden">
         {/* 左侧时间线 */}
         <div className="flex-1 overflow-y-auto p-6">
-          {mockVersions.length === 0 ? (
+          {loading ? (
+            <div className="flex h-full items-center justify-center text-sm text-slate-400 dark:text-slate-500">
+              加载中...
+            </div>
+          ) : versions.length === 0 ? (
             <div className="flex h-full items-center justify-center text-sm text-slate-400 dark:text-slate-500">
               暂无版本记录
             </div>
           ) : (
             <div className="relative ml-3 border-l border-slate-200 dark:border-slate-700">
-              {mockVersions.map((item) => (
+              {versions.map((item) => (
                 <div
-                  key={item.date}
+                  key={item.releaseDate}
+                  ref={(el) => { itemRefs.current[item.releaseDate] = el; }}
                   className={cn(
                     'relative -ml-px mb-8 cursor-pointer pl-8 transition-colors',
-                    selectedDate === item.date ? 'opacity-100' : 'opacity-70 hover:opacity-100',
+                    selectedDate === item.releaseDate ? 'opacity-100' : 'opacity-70 hover:opacity-100',
                   )}
-                  onClick={() => setSelectedDate(item.date)}
+                  onClick={() => setSelectedDate(item.releaseDate)}
                 >
-                  <TimelineDot />
+                  <TimelineDot active={selectedDate === item.releaseDate} />
+                  <div className="text-xs text-slate-400 dark:text-slate-500 mb-1">
+                    {item.releaseDate}
+                  </div>
                   <div className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">
                     {item.title}
                   </div>
 
-                  {item.features && item.features.length > 0 && (
-                    <div className="mb-2">
-                      <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">【新增功能】</div>
-                      <ul className="space-y-1">
-                        {item.features.map((f, i) => (
-                          <li key={i} className="text-sm text-slate-600 dark:text-slate-300">
-                            {i + 1}. {f}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  {item.content && (
+                    <ContentRenderer content={item.content} />
                   )}
-
-                  {item.optimizations && item.optimizations.length > 0 && (
-                    <div>
-                      <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">【优化功能】</div>
-                      <ul className="space-y-1">
-                        {item.optimizations.map((o, i) => (
-                          <li key={i} className="text-sm text-slate-600 dark:text-slate-300">
-                            {i + 1}. {o}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="mt-2 inline-flex items-center text-xs text-primary cursor-pointer hover:underline">
-                    查看更多
-                  </div>
                 </div>
               ))}
             </div>
@@ -104,22 +211,24 @@ export default function VersionNotes() {
             <Calendar size={16} />
             更新日历
           </div>
-          {mockVersions.length === 0 ? (
-            <div className="text-xs text-slate-400 dark:text-slate-500">暂无记录</div>
+          {versions.length === 0 ? (
+            <div className="text-xs text-slate-400 dark:text-slate-500">
+              {loading ? '加载中...' : '暂无记录'}
+            </div>
           ) : (
-            <div className="space-y-2">
-              {mockVersions.map((item) => (
+            <div className="space-y-1">
+              {versions.map((item) => (
                 <button
-                  key={item.date}
-                  onClick={() => setSelectedDate(item.date)}
+                  key={item.releaseDate}
+                  onClick={() => handleDateClick(item.releaseDate)}
                   className={cn(
                     'w-full rounded-lg px-3 py-2 text-left text-sm transition-colors',
-                    selectedDate === item.date
+                    selectedDate === item.releaseDate
                       ? 'bg-slate-100 dark:bg-slate-700 text-primary font-medium shadow-sm border-l-2 border-primary'
                       : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200',
                   )}
                 >
-                  {item.date}
+                  {item.releaseDate}
                 </button>
               ))}
             </div>

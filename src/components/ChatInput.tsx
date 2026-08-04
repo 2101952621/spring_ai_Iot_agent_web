@@ -1,4 +1,4 @@
-import { Send, Square } from 'lucide-react';
+import { Send, Square, LayoutGrid } from 'lucide-react';
 import { cn } from '@/utils';
 
 interface ChatInputProps {
@@ -8,6 +8,7 @@ interface ChatInputProps {
   onStop: () => void;
   loading: boolean;
   placeholder?: string;
+  onOpenFunctions?: () => void;
 }
 
 export function ChatInput({
@@ -17,6 +18,7 @@ export function ChatInput({
   onStop,
   loading,
   placeholder = '请输入内容',
+  onOpenFunctions,
 }: ChatInputProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -34,6 +36,14 @@ export function ChatInput({
   return (
     <div className="px-4 py-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700">
       <div className="relative flex items-end gap-2 px-3 py-2 border rounded-2xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus-within:border-primary/50 focus-within:bg-white dark:focus-within:bg-slate-800 focus-within:shadow-card">
+        <button
+          type="button"
+          onClick={onOpenFunctions}
+          title="找功能"
+          className="mb-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+        >
+          <LayoutGrid size={18} />
+        </button>
         <textarea
           value={value}
           onChange={handleInput}
