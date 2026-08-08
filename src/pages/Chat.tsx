@@ -180,8 +180,8 @@ export default function Chat() {
           <FunctionPanel
             open={functionPanelOpen}
             onClose={() => setFunctionPanelOpen(false)}
-            onSelect={(f: WebFunctionInfo) => {
-              const prompt = `帮我打开${f.functionName}`;
+            onSelect={(payload: WebFunctionInfo | string) => {
+              const prompt = typeof payload === 'string' ? payload : `帮我打开${payload.functionName}`;
               setInput(prompt);
               handleSendWithText(prompt);
             }}

@@ -7,10 +7,17 @@ import type { WebFunctionInfo } from '@/types';
 interface FunctionPanelProps {
   open: boolean;
   onClose: () => void;
-  onSelect?: (func: WebFunctionInfo) => void;
+  onSelect?: (payload: WebFunctionInfo | string) => void;
 }
 
-type TabKey = 'recommend' | 'functions' | 'params';
+type TabKey = 'recommend' | 'functions' | 'params' | 'ai-do';
+
+const AI_ACTIONS: { id: string; label: string; prompt: string }[] = [
+  { id: 'export-logs', label: '帮我导出日志', prompt: '帮我导出日志' },
+  { id: 'restart-device', label: '帮我重启设备', prompt: '帮我重启设备' },
+  { id: 'wifi-password', label: '帮我给路由器设置一个级别较高的无线WIFI密码', prompt: '帮我给我家里路由器设置一个级别较高的无线WIFI密码' },
+  { id: 'delete-logs', label: '删除系统2026-07-01到2026-07-31的日志', prompt: '删除系统2026-07-01到2026-07-31的日志' },
+];
 
 export function FunctionPanel({ open, onClose, onSelect }: FunctionPanelProps) {
   const [functions, setFunctions] = useState<WebFunctionInfo[]>([]);
@@ -54,6 +61,7 @@ export function FunctionPanel({ open, onClose, onSelect }: FunctionPanelProps) {
     { key: 'recommend', label: '推荐' },
     { key: 'functions', label: '找功能' },
     { key: 'params', label: '问参数' },
+    { key: 'ai-do', label: 'AI帮做' },
   ];
 
   if (!open) return null;
@@ -121,7 +129,32 @@ export function FunctionPanel({ open, onClose, onSelect }: FunctionPanelProps) {
 
         {/* 内容区 */}
         <div className="flex-1 overflow-y-auto px-4 py-3">
-          {activeTab !== 'functions' ? (
+          {activeTab === 'ai-do' ? (
+            <div className="grid grid-cols-1 gap-3">
+              {AI_ACTIONS.map((action) => (
+                <div
+                  key={action.id}
+                  onClick={() => {
+                    onSelect?.(action.prompt);
+                    onClose();
+                  }}
+                  className={cn(
+                    'group flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3 transition-all',
+                    'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700',
+                    'hover:border-primary/60 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm'
+                  )}
+                >
+                  <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                    {action.label}
+                  </span>
+                  <ChevronRight
+                    size={16}
+                    className="shrink-0 text-slate-300 group-hover:text-primary transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : activeTab !== 'functions' ? (
             <div className="py-10 text-center text-sm text-slate-400">敬请期待</div>
           ) : loading ? (
             <div className="py-10 text-center text-sm text-slate-400">加载中...</div>
