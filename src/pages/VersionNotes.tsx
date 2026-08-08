@@ -9,7 +9,7 @@ function TimelineDot({ active }: { active: boolean }) {
   return (
     <div
       className={cn(
-        'absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 transition-colors',
+        'h-2.5 w-2.5 rounded-full ring-4 transition-colors',
         active
           ? 'bg-primary ring-primary/20'
           : 'bg-slate-300 dark:bg-slate-600 ring-white dark:ring-slate-800',
@@ -177,28 +177,41 @@ export default function VersionNotes() {
               暂无版本记录
             </div>
           ) : (
-            <div className="relative ml-3 border-l border-slate-200 dark:border-slate-700">
+            <div className="relative mx-auto max-w-3xl">
+              {/* 中间竖线 */}
+              <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-slate-200 dark:bg-slate-700" />
+
               {versions.map((item) => (
                 <div
                   key={item.releaseDate}
                   ref={(el) => { itemRefs.current[item.releaseDate] = el; }}
                   className={cn(
-                    'relative -ml-px mb-8 cursor-pointer pl-8 transition-colors',
+                    'relative flex items-start py-6 transition-colors',
                     selectedDate === item.releaseDate ? 'opacity-100' : 'opacity-70 hover:opacity-100',
                   )}
                   onClick={() => setSelectedDate(item.releaseDate)}
                 >
-                  <TimelineDot active={selectedDate === item.releaseDate} />
-                  <div className="text-xs text-slate-400 dark:text-slate-500 mb-1">
-                    {item.releaseDate}
-                  </div>
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">
-                    {item.title}
+                  {/* 左侧：日期 + 标题 */}
+                  <div className="w-1/2 pr-8 pt-1 text-right">
+                    <div className="text-xs text-slate-400 dark:text-slate-500 mb-1">
+                      {item.releaseDate}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                      {item.title}
+                    </div>
                   </div>
 
-                  {item.content && (
-                    <ContentRenderer content={item.content} />
-                  )}
+                  {/* 中间圆点 */}
+                  <div className="absolute left-1/2 top-7 -translate-x-1/2">
+                    <TimelineDot active={selectedDate === item.releaseDate} />
+                  </div>
+
+                  {/* 右侧：内容 */}
+                  <div className="w-1/2 pl-8">
+                    {item.content && (
+                      <ContentRenderer content={item.content} />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
