@@ -1,20 +1,57 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { chatApi } from '@/api/chat';
 import { generateId } from '@/utils';
-import type { ChatEventVO, ChatMessage, Example, SessionVO, WebFunctionInfo } from '@/types';
+import type { ChatEventVO, ChatMessage, DownloadEventData, Example, SessionVO, WebFunctionInfo } from '@/types';
 
 export function useChat(sessionId: string) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // 按会话 ID 隔离消息状态，切换会话时不会丢失正在生成的消息
+  const [sessionMessages, setSessionMessages] = useState<Record<string, ChatMessage[]>>({});
+  // 已经从后端加载过历史消息的会话集合
+  const [loadedSessions, setLoadedSessions] = useState<Set<string>>(new Set());
+  // 当前正在进行 SSE 流式响应的会话 ID
+  const [streamingSessionId, setStreamingSessionId] = useState<string | null>(null);
+
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [examples, setExamples] = useState<Example[]>([]);
   const [examplesPage, setExamplesPage] = useState(0);
   const [examplesLoading, setExamplesLoading] = useState(false);
+
   const abortRef = useRef<(() => void) | null>(null);
   const sessionIdRef = useRef(sessionId);
   const initialLoadedRef = useRef(false);
-  const messagesSessionRef = useRef(sessionId);
+
+  // 用 ref 同步最新状态，避免这些状态变化导致 loadHistory / send 频繁重建
+  const loadedSessionsRef = useRef(loadedSessions);
+  const sessionMessagesRef = useRef(sessionMessages);
+  const streamingSessionRef = useRef(streamingSessionId);
+
   sessionIdRef.current = sessionId;
+
+  useEffect(() => {
+    loadedSessionsRef.current = loadedSessions;
+  }, [loadedSessions]);
+
+  useEffect(() => {
+    sessionMessagesRef.current = sessionMessages;
+  }, [sessionMessages]);
+
+  useEffect(() => {
+    streamingSessionRef.current = streamingSessionId;
+  }, [streamingSessionId]);
+
+  const messages = sessionMessages[sessionId] || [];
+  // loading 只对当前会话生效，切换去其他会话时不会显示停止按钮
+  const loading = streamingSessionId === sessionId;
+
+  // 更新指定会话的消息列表
+  const updateSessionMessages = useCallback((sid: string, updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+    setSessionMessages((prev) => {
+      const current = prev[sid] || [];
+      const next = updater(current);
+      if (next === current) return prev;
+      return { ...prev, [sid]: next };
+    });
+  }, []);
 
   const loadExamples = useCallback(async (page: number) => {
     setExamplesLoading(true);
@@ -35,17 +72,28 @@ export function useChat(sessionId: string) {
   }, [examplesPage, loadExamples]);
 
   const loadHistory = useCallback(async (sid: string) => {
+    if (!sid || loadedSessionsRef.current.has(sid)) return;
+
+    // 如果当前会话已有本地消息（例如正在生成中），优先保留本地状态，避免覆盖导致"正在思考"消失
+    if (sessionMessagesRef.current[sid]?.length > 0) {
+      setLoadedSessions((prev) => new Set(prev).add(sid));
+      return;
+    }
+
     try {
       const list = await chatApi.queryBySessionId(sid);
-      setMessages(
-        list.map((m) => ({
+      setSessionMessages((prev) => ({
+        ...prev,
+        [sid]: list.map((m) => ({
           id: generateId(),
           role: m.type === 'USER' ? 'user' : 'assistant',
           content: m.content,
         })),
-      );
+      }));
     } catch {
-      setMessages([]);
+      // 加载失败时不覆盖已有本地状态
+    } finally {
+      setLoadedSessions((prev) => new Set(prev).add(sid));
     }
   }, []);
 
@@ -57,30 +105,23 @@ export function useChat(sessionId: string) {
   }, [loadExamples]);
 
   useEffect(() => {
-    if (!sessionId) {
-      setMessages([]);
-      messagesSessionRef.current = '';
-      return;
-    }
-    // 如果当前 messages 已经属于目标会话，避免覆盖（例如发送消息途中触发的加载）
-    if (messagesSessionRef.current === sessionId) return;
-    loadHistory(sessionId).then(() => {
-      messagesSessionRef.current = sessionId;
-    });
+    if (!sessionId) return;
+    loadHistory(sessionId);
   }, [sessionId, loadHistory]);
 
   const stop = useCallback(() => {
     if (abortRef.current) {
       abortRef.current();
       abortRef.current = null;
-      setLoading(false);
+      setStreamingSessionId(null);
     }
   }, []);
 
   const send = useCallback(
     async (text: string, explicitSessionId?: string): Promise<void> => {
       const sid = explicitSessionId || sessionIdRef.current;
-      if (!text.trim() || !sid || loading) return;
+      // 任意会话正在流式响应时都禁止重复发送
+      if (!text.trim() || !sid || streamingSessionRef.current) return;
 
       const userMsg: ChatMessage = {
         id: generateId(),
@@ -94,10 +135,9 @@ export function useChat(sessionId: string) {
         loading: true,
       };
 
-      setMessages((prev) => [...prev, userMsg, assistantMsg]);
-      messagesSessionRef.current = sid;
+      updateSessionMessages(sid, (prev) => [...prev, userMsg, assistantMsg]);
       setInput('');
-      setLoading(true);
+      setStreamingSessionId(sid);
 
       return new Promise<void>((resolve) => {
         const es = chatApi.chatStream(text.trim(), sid);
@@ -107,7 +147,7 @@ export function useChat(sessionId: string) {
         };
 
         const finish = () => {
-          setLoading(false);
+          setStreamingSessionId(null);
           abortRef.current = null;
           resolve();
         };
@@ -116,7 +156,7 @@ export function useChat(sessionId: string) {
           try {
             const data: ChatEventVO = JSON.parse(event.data);
             if (data.eventType === 1001 && data.eventData) {
-              setMessages((prev) => {
+              updateSessionMessages(sid, (prev) => {
                 const last = prev[prev.length - 1];
                 if (!last || last.role !== 'assistant') return prev;
                 return [
@@ -128,7 +168,7 @@ export function useChat(sessionId: string) {
               try {
                 const card: WebFunctionInfo =
                   typeof data.eventData === 'string' ? JSON.parse(data.eventData) : (data.eventData as WebFunctionInfo);
-                setMessages((prev) => {
+                updateSessionMessages(sid, (prev) => {
                   const last = prev[prev.length - 1];
                   if (!last || last.role !== 'assistant') return prev;
                   return [
@@ -139,13 +179,34 @@ export function useChat(sessionId: string) {
               } catch {
                 // 卡片数据解析失败，静默忽略
               }
+            } else if (data.eventType === 1005 && data.eventData) {
+              try {
+                const downloadData: DownloadEventData =
+                  typeof data.eventData === 'string' ? JSON.parse(data.eventData) : (data.eventData as DownloadEventData);
+                if (downloadData.downloadUrl && downloadData.fileName) {
+                  chatApi.downloadFile(downloadData.downloadUrl).then((blob) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = downloadData.fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  }).catch((err) => {
+                    console.error('文件下载失败:', err);
+                  });
+                }
+              } catch {
+                // 下载事件数据解析失败，静默忽略
+              }
             } else if (data.eventType === 1002) {
               es.close();
               finish();
             }
           } catch {
             // 非 JSON 事件文本直接追加
-            setMessages((prev) => {
+            updateSessionMessages(sid, (prev) => {
               const last = prev[prev.length - 1];
               if (!last || last.role !== 'assistant') return prev;
               return [
@@ -158,7 +219,7 @@ export function useChat(sessionId: string) {
 
         es.onerror = (err) => {
           const detail = err.message || '连接异常，请稍后重试。';
-          setMessages((prev) => {
+          updateSessionMessages(sid, (prev) => {
             const last = prev[prev.length - 1];
             if (!last || last.role !== 'assistant') return prev;
             return [
@@ -170,7 +231,7 @@ export function useChat(sessionId: string) {
         };
       });
     },
-    [sessionId, loading],
+    [updateSessionMessages],
   );
 
   const createSession = useCallback(async (): Promise<SessionVO | null> => {
