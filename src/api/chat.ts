@@ -38,12 +38,24 @@ export const chatApi = {
   searchMessages: (keyword: string, page = 1, size = 20) =>
     http.get<ChatMessageSearchResult>('/ai/search/messages', { params: { keyword, page, size } }),
 
-
   /** 获取可打开的功能列表 */
   getFunctions: () => http.get<WebFunctionInfo[]>('/ai/functions'),
 
   /** 获取版本说明列表 */
   getVersions: () => http.get<VersionItem[]>('/ai/versions'),
+
+  /** 下载文件（通过 downloadToken） */
+  downloadFile: async (downloadUrl: string): Promise<Blob> => {
+    const token = localStorage.getItem('mtn_ai_token');
+    const resp = await fetch(downloadUrl, {
+      method: 'GET',
+      headers: token
+        ? { 'X-Authorization': `Bearer ${token}` }
+        : {},
+    });
+    if (!resp.ok) throw new Error(`下载失败: ${resp.status}`);
+    return resp.blob();
+  },
 
   /** 发起 SSE 聊天流 */
   chatStream: (question: string, sessionId: string) => {

@@ -79,6 +79,14 @@ export interface ChatEventVO {
   eventData: string | null;
 }
 
+export interface DownloadEventData {
+  fileName: string;
+  fileSize: number;
+  downloadUrl: string;
+  downloadToken: string;
+  cardType: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
