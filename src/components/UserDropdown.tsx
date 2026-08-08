@@ -33,7 +33,7 @@ export function UserDropdown({ userName, role, onLogout }: UserDropdownProps) {
   }, []);
 
   const menuItems = [
-    { icon: User, label: '账号设置', onClick: () => {} },
+    { icon: User, label: '账号设置', onClick: () => navigate('/account') },
     { icon: ImageIcon, label: 'Logo设置', onClick: () => {} },
     { type: 'divider' as const },
     { icon: RefreshCw, label: '切换登录', onClick: () => {} },

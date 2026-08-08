@@ -70,4 +70,8 @@ export const authApi = {
       resetToken: data.resetToken,
       verificationCode: data.verificationCode,
     }),
+
+  /** 修改密码 */
+  changePassword: (oldPassword: string, newPassword: string) =>
+    http.post<MessageResponse>('/auth/changePassword', { oldPassword, newPassword }),
 };
