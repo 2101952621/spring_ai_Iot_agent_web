@@ -10,13 +10,19 @@ interface FunctionPanelProps {
   onSelect?: (payload: WebFunctionInfo | string) => void;
 }
 
-type TabKey = 'recommend' | 'functions' | 'params' | 'ai-do';
+type TabKey = 'recommend' | 'functions' | 'params' | 'ai-do' | 'other-tools';
 
 const AI_ACTIONS: { id: string; label: string; prompt: string }[] = [
   { id: 'export-logs', label: '帮我导出日志', prompt: '帮我导出日志' },
   { id: 'restart-device', label: '帮我重启设备', prompt: '帮我重启设备' },
   { id: 'wifi-password', label: '帮我给路由器设置一个级别较高的无线WIFI密码', prompt: '帮我给我家里路由器设置一个级别较高的无线WIFI密码' },
   { id: 'delete-logs', label: '删除系统2026-07-01到2026-07-31的日志', prompt: '删除系统2026-07-01到2026-07-31的日志' },
+];
+
+const OTHER_TOOLS: { id: string; label: string; prompt: string }[] = [
+  { id: 'weather', label: '查询西安天气', prompt: '查询西安天气' },
+  { id: 'navigation', label: '查询西安到北京最近的导航线路', prompt: '查询西安到北京最近的导航线路' },
+  { id: 'ip-location', label: '查询ip 192.168.0.1的位置信息', prompt: '查询ip 192.168.0.1的位置信息' },
 ];
 
 export function FunctionPanel({ open, onClose, onSelect }: FunctionPanelProps) {
@@ -62,6 +68,7 @@ export function FunctionPanel({ open, onClose, onSelect }: FunctionPanelProps) {
     { key: 'functions', label: '找功能' },
     { key: 'params', label: '问参数' },
     { key: 'ai-do', label: 'AI帮做' },
+    { key: 'other-tools', label: '其他工具' },
   ];
 
   if (!open) return null;
@@ -129,9 +136,9 @@ export function FunctionPanel({ open, onClose, onSelect }: FunctionPanelProps) {
 
         {/* 内容区 */}
         <div className="flex-1 overflow-y-auto px-4 py-3">
-          {activeTab === 'ai-do' ? (
+          {activeTab === 'ai-do' || activeTab === 'other-tools' ? (
             <div className="grid grid-cols-1 gap-3">
-              {AI_ACTIONS.map((action) => (
+              {(activeTab === 'ai-do' ? AI_ACTIONS : OTHER_TOOLS).map((action) => (
                 <div
                   key={action.id}
                   onClick={() => {
