@@ -93,6 +93,8 @@ export interface ChatMessage {
   content: string;
   loading?: boolean;
   functionCard?: WebFunctionInfo;
+  analysisCard?: AnalysisPreviewData;
+  reportDownload?: DownloadEventData;
 }
 
 export interface ChatMessageSearchVO {
@@ -112,5 +114,39 @@ export interface ChatMessageSearchResult {
   size: number;
   total: number;
   items: ChatMessageSearchVO[];
+}
+
+// ==================== 日志分析相关类型 ====================
+
+export interface LogInsight {
+  level: 'DANGER' | 'WARNING' | 'INFO';
+  type: string;
+  title: string;
+  description: string;
+  suggestion: string;
+}
+
+export interface LogTopOperation {
+  method: string;
+  url: string;
+  count: number;
+}
+
+export interface AnalysisPreviewData {
+  cardType: 'ANALYSIS_PREVIEW';
+  totalLogs: number;
+  uniqueUserCount: number;
+  timeRange: string;
+  crudStats: Record<string, number>;
+  deleteTotal: number;
+  deleteSuccessRate: number;
+  errorCount: number;
+  errorRate: number;
+  avgTimeMs: number;
+  mostActiveUser: string | null;
+  mostActiveUserCount: number;
+  topDeleteUsers: Record<string, number> | null;
+  topOperations: LogTopOperation[] | null;
+  insights: LogInsight[];
 }
 

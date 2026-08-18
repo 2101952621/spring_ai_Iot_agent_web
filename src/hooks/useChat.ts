@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { chatApi } from '@/api/chat';
 import { generateId } from '@/utils';
-import type { ChatEventVO, ChatMessage, DownloadEventData, Example, SessionVO, WebFunctionInfo } from '@/types';
+import type { AnalysisPreviewData, ChatEventVO, ChatMessage, DownloadEventData, Example, SessionVO, WebFunctionInfo } from '@/types';
 
 export function useChat(sessionId: string) {
   // 按会话 ID 隔离消息状态，切换会话时不会丢失正在生成的消息
@@ -196,7 +196,18 @@ export function useChat(sessionId: string) {
               try {
                 const downloadData: DownloadEventData =
                   typeof data.eventData === 'string' ? JSON.parse(data.eventData) : (data.eventData as DownloadEventData);
-                if (downloadData.downloadUrl && downloadData.fileName) {
+                if (downloadData.cardType === 'REPORT_EXPORT') {
+                  // Word 分析报告：显示下载按钮卡片，不自动下载
+                  updateSessionMessages(sid, (prev) => {
+                    const last = prev[prev.length - 1];
+                    if (!last || last.role !== 'assistant') return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      { ...last, reportDownload: downloadData, loading: false },
+                    ];
+                  });
+                } else if (downloadData.downloadUrl && downloadData.fileName) {
+                  // Excel 日志导出：自动下载
                   chatApi.downloadFile(downloadData.downloadUrl).then((blob) => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -212,6 +223,22 @@ export function useChat(sessionId: string) {
                 }
               } catch {
                 // 下载事件数据解析失败，静默忽略
+              }
+            } else if (data.eventType === 1006 && data.eventData) {
+              // 分析预览事件：渲染智能洞察卡片
+              try {
+                const analysisData: AnalysisPreviewData =
+                  typeof data.eventData === 'string' ? JSON.parse(data.eventData) : (data.eventData as AnalysisPreviewData);
+                updateSessionMessages(sid, (prev) => {
+                  const last = prev[prev.length - 1];
+                  if (!last || last.role !== 'assistant') return prev;
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, analysisCard: analysisData, loading: false },
+                  ];
+                });
+              } catch {
+                // 分析预览数据解析失败，静默忽略
               }
             } else if (data.eventType === 1002) {
               es.close();

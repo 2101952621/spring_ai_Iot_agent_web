@@ -3,6 +3,8 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/utils';
 import { FunctionCard } from './FunctionCard';
+import { AnalysisCard } from './AnalysisCard';
+import { ReportDownloadCard } from './ReportDownloadCard';
 import type { ChatMessage as ChatMessageType } from '@/types';
 
 interface ChatMessageProps {
@@ -64,6 +66,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
             >
               {message.content}
             </Markdown>
+            {message.analysisCard && <AnalysisCard data={message.analysisCard} />}
+            {message.reportDownload && <ReportDownloadCard data={message.reportDownload} />}
             {message.functionCard && <FunctionCard data={message.functionCard} />}
           </div>
         )}
