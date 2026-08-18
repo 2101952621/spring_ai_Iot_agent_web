@@ -111,11 +111,24 @@ export function useChat(sessionId: string) {
 
   const stop = useCallback(() => {
     if (abortRef.current) {
+      const sid = streamingSessionRef.current;
       abortRef.current();
       abortRef.current = null;
       setStreamingSessionId(null);
+      // 主动停止后 onerror 不再触发（EventSourcePolyfill 已标记 closed），
+      // 需要手动关闭 assistant 消息的 loading 状态
+      if (sid) {
+        updateSessionMessages(sid, (prev) => {
+          const last = prev[prev.length - 1];
+          if (!last || last.role !== 'assistant' || !last.loading) return prev;
+          return [
+            ...prev.slice(0, -1),
+            { ...last, loading: false, content: last.content || '（已停止生成）' },
+          ];
+        });
+      }
     }
-  }, []);
+  }, [updateSessionMessages]);
 
   const send = useCallback(
     async (text: string, explicitSessionId?: string): Promise<void> => {

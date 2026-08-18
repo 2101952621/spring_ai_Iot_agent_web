@@ -1,5 +1,4 @@
 import { http } from './request';
-import type { ChatEventVO, ChatSessionVO, Example, MessageVO, SessionVO, WebFunctionInfo, VersionItem } from '@/types';
 import type {
   ChatEventVO,
   ChatMessageSearchResult,
@@ -7,6 +6,8 @@ import type {
   Example,
   MessageVO,
   SessionVO,
+  WebFunctionInfo,
+  VersionItem,
 } from '@/types';
 
 export const chatApi = {
@@ -81,6 +82,8 @@ class EventSourcePolyfill {
   private abortController = new AbortController();
   private url: string;
   private options: RequestInit;
+  // 标记是否为主动关闭（区别于网络异常断开）
+  private closed = false;
 
   onmessage: ((ev: MessageEvent<string>) => void) | null = null;
   onerror: ((err: Error) => void) | null = null;
@@ -126,7 +129,13 @@ class EventSourcePolyfill {
         buffer = lines.pop() || '';
         this.parseLines(lines);
       }
+      // 流正常结束但未通过 close() 关闭（后端未发送完成事件），通知上层避免永久 loading
+      if (!this.closed && this.onerror) {
+        this.onerror(new Error('连接已关闭'));
+      }
     } catch (err) {
+      // 主动 close 导致的 abort 不是错误，无需触发 onerror
+      if (this.closed) return;
       if (this.onerror && err instanceof Error) this.onerror(err);
     }
   }
@@ -150,6 +159,7 @@ class EventSourcePolyfill {
   }
 
   close() {
+    this.closed = true;
     this.abortController.abort();
   }
 }

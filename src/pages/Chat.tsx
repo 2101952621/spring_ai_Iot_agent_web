@@ -86,12 +86,11 @@ export default function Chat() {
       const session = await createSession();
       if (!session) return;
       sid = session.sessionId;
+      // 必须在 send 之前切换会话，否则流式消息写入新 sid 但 UI 仍读取旧 sid，导致界面不刷新
+      setCurrentSessionId(sid);
+      loadSessions();
     }
     await send(text.trim(), sid);
-    if (sid !== currentSessionId) {
-      setCurrentSessionId(sid);
-      await loadSessions();
-    }
   };
 
   const handleSend = async () => {
@@ -107,13 +106,11 @@ export default function Chat() {
         const session = await createSession();
         if (!session) return;
         sid = session.sessionId;
-      }
-      setInput(question);
-      await send(question, sid);
-      if (sid !== currentSessionId) {
+        // 必须在 send 之前切换会话，否则流式消息写入新 sid 但 UI 仍读取旧 sid，导致界面不刷新
         setCurrentSessionId(sid);
-        await loadSessions();
+        loadSessions();
       }
+      await send(question, sid);
     } finally {
       setExampleSending(false);
     }
