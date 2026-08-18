@@ -16,6 +16,7 @@ import {
   Globe,
   X,
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/utils';
 
@@ -256,8 +257,25 @@ function ContactModal({ open, onClose }: { open: boolean; onClose: () => void })
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [contactOpen, setContactOpen] = useState(false);
+
+  const handleStartChat = () => {
+    if (isAuthenticated) {
+      navigate('/chat');
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const handleViewVersions = () => {
+    if (isAuthenticated) {
+      navigate('/version-notes');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-start via-white to-brand-end dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-300">
@@ -307,14 +325,14 @@ export default function Home() {
               {/* CTA */}
               <div className="mt-8 flex flex-wrap gap-3">
                 <button
-                  onClick={() => navigate('/chat')}
+                  onClick={handleStartChat}
                   className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(59,130,246,0.4)] transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(59,130,246,0.5)] active:translate-y-0"
                 >
                   <MessageCircle size={16} />
                   开始对话
                 </button>
                 <button
-                  onClick={() => navigate('/version-notes')}
+                  onClick={handleViewVersions}
                   className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 transition-all hover:-translate-y-0.5 hover:shadow-card"
                 >
                   了解详情

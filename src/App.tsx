@@ -50,14 +50,7 @@ function App() {
                 </PublicOnlyRoute>
               }
             />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/" element={<Home />} />
             <Route
               path="/chat"
               element={
